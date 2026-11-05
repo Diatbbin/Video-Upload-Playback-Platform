@@ -9,6 +9,20 @@ Hosted on **Google Cloud** (Cloud Run, GCS, Pub/Sub) with **Firebase** for Auth,
 
 ---
 
+## System design
+
+![System design diagram](docs/system-design.jpg)
+
+1. User signs in with Google → Firebase Auth → `createUser` writes to Firestore  
+2. Upload requests a signed URL via `generateUploadUrl` and stores video metadata  
+3. Client uploads video + thumbnail directly to GCS (`raw-videos-db`, `thumbnails-db`)  
+4. GCS object finalize → Pub/Sub → Express transcoding service on Cloud Run  
+5. Worker downloads raw video, FFmpeg to 360p, uploads to `processed-videos-db`, updates Firestore, deletes raw  
+6. `getVideos` returns processed videos for the home page  
+7. Watch page streams from the public processed-videos bucket  
+
+---
+
 ## Home page
 
 <img width="1466" height="826" alt="Screenshot 2026-04-22 at 11 53 00 PM" src="https://github.com/user-attachments/assets/6a71cffc-b4fa-47c8-97c9-4410c205faed" />
